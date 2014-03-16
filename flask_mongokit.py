@@ -81,11 +81,12 @@ class MongoKit(object):
     .. _MongoKit: http://namlook.github.com/mongokit/
     """
 
-    def __init__(self, app=None):
+    def __init__(self, app=None, database=None):
         #: :class:`list` of :class:`mongokit.Document`
         #: which will be automated registed at connection
         self.registered_documents = []
         self.mongokit_connection = None
+        self.database = database
 
         if app is not None:
             self.app = app
@@ -169,8 +170,10 @@ class MongoKit(object):
             slave_okay=self.app.config.get('MONGODB_SLAVE_OKAY')
         )
         self.mongokit_connection.register(self.registered_documents)
-        self.mongokit_db = Database(self.mongokit_connection,
-                                   self.app.config.get('MONGODB_DATABASE'))
+        if self.database:
+            self.mongokit_db = Database(self.mongokit_connection, self.database)
+        else:
+            self.mongokit_db = Database(self.mongokit_connection, self.app.config.get('MONGODB_DATABASE'))
         if self.app.config.get('MONGODB_USERNAME') is not None:
             self.mongokit_db.authenticate(
                 self.app.config.get('MONGODB_USERNAME'),
